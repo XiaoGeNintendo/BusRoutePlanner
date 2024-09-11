@@ -1,19 +1,43 @@
-function showAddLocationModal(){
-    $('#add_location').modal('show');
-}
 
+
+/**
+ * Search result of locations
+ */
+var locations;
 function searchLocation(){
     const placeSearch = new AMap.PlaceSearch({
         city: $('#l_city').val(),
-        pageSize: 5, //单页显示结果条数
+        pageSize: 50, //单页显示结果条数
         pageIndex: 1, //页码
-        map:map,
-        panel: "l_result", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>，结果列表将在此容器中进行展示。
-        autoFitView: true, //是否自动调整地图视野使绘制的 Marker 点都处于视口的可见范围
     });
-    placeSearch.search($('#l_keyword').val()); //使用插件搜索关键字并查看结果
-    placeSearch.on("listElementClick",e =>{
-        console.log(e);
+    placeSearch.search($('#l_keyword').val(),function(status,result){
+        if(status!="complete"){
+            $.toast({class:"error",message:"搜索失败："+status});
+            return;
+        }
 
-    })
+        locations=result.poiList.pois;
+
+        $('#l_result').html('');
+        result.poiList.pois.forEach((poi,index) => {
+            const template=`
+            <button class="ui primary tertiary button" onclick="addLocation(${index})">${poi.id} ${poi.name} ${poi.address}</button> <br/>
+            `
+            $('#l_result').append(template);
+        });
+    }); 
+}
+
+function addLocation(index){
+    const data=locations[index];
+    addRoute2({
+        start_station: data.name,
+        end_station: data.name,
+        via: "步行",
+        color: "888888",
+        passes: [],
+        polyline: [data.location]
+    });
+
+    $('#add_location').modal('hide');
 }

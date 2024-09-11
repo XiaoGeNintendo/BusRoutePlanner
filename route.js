@@ -43,32 +43,62 @@ function colorRoute(index){
     updateRoute();
 }
 
+function validateRoute(){
+    var fail=false;
+    for(var i=0;i<route.length;i++){
+        const r=route[i];
+        if(!r){
+            fail=true;
+            break;
+        }
+    }
+    if(fail){
+        $.toast({class:'error',message:'发现数据损坏。请按重置按钮。'})
+    }
+}
 function updateRoute(){
     map.clearMap();
     $('#list_line').html('');
 
     //update line marker
     route.forEach((r,index) => {
-        const template=`
+
+        if(r.start_station==r.end_station && r.via=="步行"){
+            const template=`
 <div class="title" style="color: #${r.color};">
 <i class="dropdown icon"></i>
 #${index+1}
 <b>${r.start_station}</b>
-<i class="right arrow icon"></i>
-<b>${r.end_station}</b>
-<i class="bus icon"></i>
-<b>${r.via}</b>
+<i class="walking icon"></i>
 <a onclick="removeRoute(${index})" title="删除段"><i class="trash icon"></i></a>
 <a onclick="swapRoute(${index-1},${index})" title="上移段"><i class="angle up icon"></i></a>
 <a onclick="swapRoute(${index+1},${index})" title="下移段"><i class="angle down icon"></i></a>
-<a onclick="colorRoute(${index})" title="更改颜色"><i class="palette icon"></i></a>
 </div>
 <div class="content">
-${r.passes.map((station, index)=>{
-return `<p><i class="ui blue circular label">${index+1}</i>
-<b>${station}</b></p>
-`
-}).join("")}
+</div>`;
+            $('#list_line').append(template);
+            return;
+        }
+        const template=`
+<div class="title" style="color: #${r.color};">
+    <i class="dropdown icon"></i>
+    #${index+1}
+    <b>${r.start_station}</b>
+    <i class="right arrow icon"></i>
+    <b>${r.end_station}</b>
+    <i class="bus icon"></i>
+    <b>${r.via}</b>
+    <a onclick="removeRoute(${index})" title="删除段"><i class="trash icon"></i></a>
+    <a onclick="swapRoute(${index-1},${index})" title="上移段"><i class="angle up icon"></i></a>
+    <a onclick="swapRoute(${index+1},${index})" title="下移段"><i class="angle down icon"></i></a>
+    <a onclick="colorRoute(${index})" title="更改颜色"><i class="palette icon"></i></a>
+</div>
+<div class="content">
+    ${r.passes.map((station, index)=>{
+    return `<p><i class="ui blue circular label">${index+1}</i>
+    <b>${station}</b></p>
+    `
+    }).join("")}
 </div>`;
         $('#list_line').append(template);
     });
@@ -172,11 +202,12 @@ function addRoute(){
         }
     });
 
-    addRoute(newRoute);
+    console.log(newRoute);
+    addRoute2(newRoute);
     $('#line_modal').modal('hide');
 }
 
-function addRoute(newRoute){
+function addRoute2(newRoute){
     route.push(newRoute);
     localStorage["brp_route"]=JSON.stringify(route);
     updateRoute();

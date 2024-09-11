@@ -34,13 +34,17 @@
                 <button class="ui blue icon button" title="添加途径点" onclick="showAddLocationModal()">
                     <i class="walking icon"></i>
                 </button>
+
+                <button class="ui red icon button" title="重置" onclick="confirmReset()">
+                    <i class="trash icon"></i>
+                </button>
             </div>
             
             <div class="ui segment">
-                <div class="ui input"style="width: 40%;">
+                <div class="ui input" style="width: 40%;">
                     <input id="amap_key" placeholder="高德API Key" >
                 </div>
-                <div class="ui input"style="width: 40%;">
+                <div class="ui input" style="width: 40%;">
                     <input id="amap_code" placeholder="高德API Code">
                 </div>
                 
@@ -49,7 +53,7 @@
             </div>
         </div>
         <div class="ui modal" id="add_location">
-            <div class="header">添加兴趣点</div>
+            <div class="header">添加单点</div>
             <div class="content">
 
                 <div class="ui input" style="width: 30%;">
@@ -202,6 +206,7 @@
                 <i class="arrow right icon"></i>
                 <b id="l_end_station">...</b>
                 <button class="ui green button" onclick="addRoute()">创建!</button>
+                <button class="ui gray button" onclick="$('#search_route').modal('show');">返回</button>
                 <hr/>
                 <div id="l_stations"></div>
             </div>
@@ -216,6 +221,17 @@
             function showSearchRouteModal(){
                 // console.log("Hi");
                 $('#search_route').modal('show');
+            }
+            function showAddLocationModal(){
+                $('#add_location').modal('show');
+            }
+
+            function confirmReset(){
+                const res=confirm("确认删除所有数据？");
+                if(res){
+                    localStorage.removeItem("brp_route");
+                    location.reload();
+                }
             }
         </script>
         <script src="key.js"></script>

@@ -13,7 +13,7 @@ function updateKey(){
 var key=localStorage["amap_key"];
 var code=localStorage["amap_code"];
 if(!(key && code)){
-    $.toast({class:"warning",message:"未配置高德地图API，地图将不会加载!"})
+    $.toast({class:"warning",message:"未配置高德地图API，所有功能将不会生效！"})
 }else{
     $.toast({message:"使用key:"+key});
 
@@ -21,6 +21,7 @@ if(!(key && code)){
         AMap.plugin('AMap.LineSearch',function(){});
         AMap.plugin('AMap.PlaceSearch',function(){});
         map=new AMap.Map("map");
+        validateRoute();
         updateRoute();
     });
 }
