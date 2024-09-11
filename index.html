@@ -1,0 +1,224 @@
+<html>
+    <head>
+        <title>BRP</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8">
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.3/dist/semantic.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.3/dist/semantic.min.css">
+        <script src="https://webapi.amap.com/loader.js"></script>
+        <script src="map.js"></script>
+        <script src="route.js"></script>
+        <script src="location.js"></script>
+    </head>
+
+    <body>
+        <div class="ui container" id="main" style="margin-top: 20px; margin-bottom: 20px;">
+            <h1>BRP 公交线路记录器</h1>
+            By XGN, HHS 2024
+
+            <div class="ui segment">
+                <h2>地图</h2>
+                <div id="map" style="width:100%;height: 500px;"></div>
+            </div>
+            <div class="ui segment">
+                <h2>路线</h2>
+                <div id="list_line" class="ui styled accordion" style="margin-bottom: 20px; width: 80%;">
+                    无路线
+                </div>
+
+                <button class="ui blue icon button" title="添加新公交路线" onclick="showSearchRouteModal()">
+                    <i class="plus icon"></i>
+                </button>
+
+                <button class="ui blue icon button" title="添加途径点" onclick="showAddLocationModal()">
+                    <i class="walking icon"></i>
+                </button>
+            </div>
+            
+            <div class="ui segment">
+                <div class="ui input"style="width: 40%;">
+                    <input id="amap_key" placeholder="高德API Key" >
+                </div>
+                <div class="ui input"style="width: 40%;">
+                    <input id="amap_code" placeholder="高德API Code">
+                </div>
+                
+                <button class="ui blue button" onclick="updateKey()">更新Key</button>
+                <button class="ui red button" onclick="removeKey()">重置Key</button>
+            </div>
+        </div>
+        <div class="ui modal" id="add_location">
+            <div class="header">添加兴趣点</div>
+            <div class="content">
+
+                <div class="ui input" style="width: 30%;">
+                    <input id="l_city" placeholder="目标城市">
+                </div>
+
+                <div class="ui input"style="width: 60%;">
+                    <input id="l_keyword" placeholder="关键字">
+                </div>
+
+                <button class="ui blue button" onclick="searchLocation()">搜索</button>
+                
+                <hr/>
+
+                <div class="ui short scrolling segment" id="l_result">
+                    搜索结果将会显示在此处
+                </div>
+            </div>
+        </div>
+
+        <div class="ui modal" id="search_route">
+            <div class="header">添加路线</div>
+            <div class="content">
+
+                <div class="ui input"style="width: 40%;">
+                    <input id="r_city" placeholder="城市" >
+                </div>
+                <div class="ui input"style="width: 40%;">
+                    <input id="r_keyword" placeholder="关键字">
+                </div>
+
+                <button class="ui blue button" onclick="searchRoute()">搜索</button>
+                
+                <hr/>
+
+                <div class="ui short scrolling segment" id="search_result">
+                    搜索结果将会显示在此处
+                </div>
+
+                <script>
+                    /**
+                     * The last searched line information
+                     */
+                    var lineInfo=[];
+                    /**
+                     * The current line data to be displayed on modal 
+                     */
+                    var lineData=null;
+
+                    function searchRoute(){
+                        var linesearch = new AMap.LineSearch({
+                            pageIndex: 1,
+                            city: $('#r_city').val(),
+                            pageSize: 50,
+                            extensions: "all",
+                        });
+
+                        linesearch.search($('#r_keyword').val(), function(status, result) {
+                            $('#search_result').html('');
+
+                            console.log(result);
+                            if (status === 'complete' && result.info === 'OK') {
+                                lineInfo=result.lineInfo;
+                                for(var i=0;i<lineInfo.length;i++){
+                                    const line=lineInfo[i];
+                                    const template=`
+                                    <button class="ui primary tertiary button" onclick="openLineModal(${i})">${line.id} ${line.name} ${line.start_stop} 至 ${line.end_stop}</button> <br/>
+                                    `
+                                    $('#search_result').append(template);
+                                }
+                            } else {
+                                if(status=="no_data"){
+                                    $('#search_resule').html('无数据');
+                                }else{
+                                    $.toast({class:'error',message:'搜索失败，原因请查阅控制台'});
+                                    console.log(status,result);
+                                }
+                            }
+                        });
+                    }
+
+                    function openLineModal(index){
+                        startStation=endStation=-1;
+
+                        lineData=lineInfo[index];
+
+                        $('#l_start_station').text('...');
+                        $('#l_end_station').text('...');
+                        $('#l_stations').html('');
+                        for(var i=0;i<lineData.via_stops.length;i++){
+                            const stop=lineData.via_stops[i];
+                            const template=`
+                            <i class="ui blue circular label">${stop.sequence}</i>
+                            <button class="ui primary tertiary button" onclick="setTerminal(${i})">${stop.name}</button> <br/>
+                            `
+
+                            $('#l_stations').append(template);
+                        }
+
+                        $('#line_modal').modal('show');
+                    }
+
+
+                    var startStation=-1;
+                    var endStation=-1;
+                    function setTerminal(index){
+                        function setStation(id, index){
+                            if(id==0){
+                                if(index==-1){
+                                    startStation=index;
+                                    $('#l_start_station').text("...");
+                                }else{
+                                    startStation=index;
+                                    $('#l_start_station').text(lineData.via_stops[index].name);
+                                }
+                            }else{
+                                if(index==-1){
+                                    endStation=index;
+                                    $('#l_end_station').text("...");
+                                }else{
+                                    endStation=index;
+                                    $('#l_end_station').text(lineData.via_stops[index].name);
+                                }
+                            }
+                        }
+                        if(startStation==-1){
+                            setStation(0,index);
+                            setStation(1,-1);
+                        }else{
+                            if(index<=startStation){
+                                setStation(0,index);
+                                setStation(1,-1);
+                            }else if(endStation==-1){
+                                setStation(1,index);
+                            }else{
+                                setStation(0,index);
+                                setStation(1,-1);
+                            }
+                        }
+                    }
+                </script>
+            </div>
+        </div>
+
+        <div class="ui modal" id="line_modal">
+            <div class="header">线路信息</div>
+            <div class="content">
+                请选择始末站：
+                <b id="l_start_station">...</b>
+                <i class="arrow right icon"></i>
+                <b id="l_end_station">...</b>
+                <button class="ui green button" onclick="addRoute()">创建!</button>
+                <hr/>
+                <div id="l_stations"></div>
+            </div>
+        </div>
+
+        <script>
+            
+            $('.ui.accordion').accordion();
+
+            route=JSON.parse(localStorage["brp_route"] || "[]") || [];
+
+            function showSearchRouteModal(){
+                // console.log("Hi");
+                $('#search_route').modal('show');
+            }
+        </script>
+        <script src="key.js"></script>
+    </body>
+
+</html>
