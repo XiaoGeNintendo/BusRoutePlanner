@@ -139,7 +139,7 @@ function updateRoute(){
     })
 
     //update point markers
-    route.forEach(r=>{
+    route.forEach((r,index)=>{
         if(r.polyline.length==0){
             return;
         }
@@ -160,8 +160,8 @@ function updateRoute(){
             fillOpacity: 1, //圆点填充透明度
         });
 
-        c_start.on('click',() => {$.toast({message:r.start_station})});
-        c_end.on('click',() => {$.toast({message:r.end_station})});
+        c_start.on('click',() => {$.toast({message:`${r.start_station}。下一步：${r.via}往${r.end_station}`})});
+        c_end.on('click',() => {$.toast({message:r.end_station+"。 下一步："+(index==route.length-1?"完结啦！":"前往 "+route[index+1].start_station)})});
         map.add(c_start);
         map.add(c_end);
     });
