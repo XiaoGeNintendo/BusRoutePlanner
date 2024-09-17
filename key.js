@@ -20,6 +20,7 @@ if(!(key && code)){
     initializeMap(key,code, function(){
         AMap.plugin('AMap.LineSearch',function(){});
         AMap.plugin('AMap.PlaceSearch',function(){});
+        AMap.plugin('AMap.MoveAnimation',function(){});
         map=new AMap.Map("map");
         validateRoute();
         updateRoute();

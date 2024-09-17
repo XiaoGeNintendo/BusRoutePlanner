@@ -6,7 +6,7 @@
  * end_station: String
  * via: String
  * color: String
- * passes: [String]
+ * passes: [{name:String, location: pair}]
  * polyline: [pair]
  */
 var route=[];
@@ -57,6 +57,11 @@ function validateRoute(){
     }
 }
 function updateRoute(){
+    if(animationMarker!=null){
+        animationMarker.stopMove();
+        animationMarker=null;
+    }
+    
     map.clearMap();
     $('#list_line').html('');
 
@@ -96,7 +101,7 @@ function updateRoute(){
 <div class="content">
     ${r.passes.map((station, index)=>{
     return `<p><i class="ui blue circular label">${index+1}</i>
-    <b>${station}</b></p>
+    <b>${station.name}</b></p>
     `
     }).join("")}
 </div>`;
@@ -143,6 +148,22 @@ function updateRoute(){
         if(r.polyline.length==0){
             return;
         }
+
+        if(showPassMarker){
+            r.passes.forEach(ele=>{
+                var c = new AMap.CircleMarker({
+                    center: ele.location, //圆心
+                    radius: 3, //半径
+                    strokeColor: "#336699", //轮廓线颜色
+                    strokeWeight: 2, //轮廓线宽度
+                    fillColor: "#ffffff", //圆点填充颜色
+                    fillOpacity: 1, //圆点填充透明度
+                });
+                c.on('click',() => {$.toast({message:`途径：${ele.name}`})});
+                map.add(c);
+            })
+        }
+
         var c_start = new AMap.CircleMarker({
             center: r.polyline[0], //圆心
             radius: 4, //半径
@@ -184,7 +205,7 @@ function addRoute(){
     newRoute.polyline=[];
 
     for(var i=startStation;i<=endStation;i++){
-        newRoute.passes.push(lineData.via_stops[i].name);
+        newRoute.passes.push({name:lineData.via_stops[i].name,location:lineData.via_stops[i].location});
     }
 
     var status=0;

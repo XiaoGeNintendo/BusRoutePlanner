@@ -10,6 +10,7 @@
         <script src="map.js"></script>
         <script src="route.js"></script>
         <script src="location.js"></script>
+        <script src="animation.js"></script>
     </head>
 
     <body>
@@ -37,6 +38,14 @@
 
                 <button class="ui red icon button" title="重置" onclick="confirmReset()">
                     <i class="trash icon"></i>
+                </button>
+                
+                <button class="ui icon button" title="显示/隐藏途径站点" onclick="togglePassMarker()">
+                    <i class="eye icon"></i>
+                </button>
+
+                <button class="ui icon button" title="录像回放" onclick="startAnimation()">
+                    <i class="video icon"></i>
                 </button>
             </div>
             
@@ -232,6 +241,16 @@
                     localStorage.removeItem("brp_route");
                     location.reload();
                 }
+            }
+
+            function togglePassMarker(){
+                showPassMarker=!showPassMarker;
+                if(showPassMarker){
+                    $.toast({message:"已打开途径站标记"})
+                }else{
+                    $.toast({message:"已关闭途径站标记"})
+                }
+                updateRoute();
             }
         </script>
         <script src="key.js"></script>

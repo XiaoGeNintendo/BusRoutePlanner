@@ -1,6 +1,8 @@
 var AMap=null;
 var map=null;
 
+var showPassMarker=false;
+
 function compare1(first, second){
     return Math.abs(first-second)<=1e-7;
 }
