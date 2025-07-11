@@ -1,13 +1,24 @@
 let y=30;
+
+let totalDistance=0;
+
 const X=350;
+
+const X_RIGHT=700;
+
 const ACCUMULATE_Y=50;
 const CIRCLE_SIZE = 10;
 
 let layer=new Konva.Layer();
 
+function length(arr){
+    return AMap.GeometryUtil.distanceOfLine(arr)
+}
+
 function generateReport(){
     layer=new Konva.Layer();
     y=30;
+    totalDistance=0;
 
     // first we need to create a stage
     let stage = new Konva.Stage({
@@ -18,12 +29,15 @@ function generateReport(){
 
 
     for(let i=0;i<route.length;i++){
-
-
         //add a route
         let r = route[i];
 
         let sameStation=false;
+
+        //accumulate distance
+        if(i!==0) {
+            totalDistance += length([route[i-1].polyline[route[i-1].polyline.length-1], r.polyline[0]]);
+        }
 
         //add dash line if not same station transfer
         if(i!==0 && r.start_station!==route[i-1].end_station) {
@@ -38,6 +52,18 @@ function generateReport(){
         }else if(i!==0){
             sameStation=true;
         }
+
+        //write distance
+        let distanceText = new Konva.Text({
+            x: X_RIGHT-150,
+            y: y+(sameStation?-ACCUMULATE_Y+10:0),
+            width: 150,
+            text: `${(totalDistance/1000).toFixed(2)} km`,
+            fontSize: 10,
+            fill: 'grey',
+            align: 'right'
+        });
+        layer.add(distanceText);
 
         if(r.passes.length===0){
             //it's a POI
@@ -82,7 +108,18 @@ function generateReport(){
             }
             drawCircle(CIRCLE_SIZE, r.end_station);
 
-
+            //accumulate distance
+            totalDistance+= length(r.polyline);
+            let distanceText = new Konva.Text({
+                x: X_RIGHT-150,
+                y: y-ACCUMULATE_Y,
+                width: 150,
+                text: `${(totalDistance/1000).toFixed(2)} km`,
+                fontSize: 10,
+                fill: 'grey',
+                align: 'right'
+            });
+            layer.add(distanceText);
         }
     }
 
