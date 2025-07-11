@@ -10,6 +10,16 @@ function doAnimation(){
     console.log("DoAnimation:",currentRoute,interpolating,r);
 
     if(interpolating){
+        if(currentRoute===route.length-1){
+            return;
+        }
+
+        if(route[currentRoute+1].start_station===r.end_station) {
+            showLcdWithMove("");
+        }else{
+            showLcdWithMove(route[currentRoute + 1].start_station);
+        }
+
         $.toast({message:"前往下一程开始点："+route[currentRoute+1].start_station});
         console.log([r.polyline[r.polyline.length-1],route[currentRoute+1].polyline[0]]);
         setTimeout(()=>{
@@ -17,11 +27,19 @@ function doAnimation(){
         },500);
         
     }else{
+        showLcdWithLine(r)
+
         $.toast({message:`第${currentRoute+1}程：${r.via}从${r.start_station}前往${r.end_station}`});
         console.log(r.polyline);
         setTimeout(()=>{
 
-            animationMarker.moveAlong(r.polyline,{
+            //special case for single point routes
+            let pl=r.polyline
+            if(pl.length===1){
+                pl=[pl[0],pl[0]];
+            }
+
+            animationMarker.moveAlong(pl,{
                 speed:SPEED,
                 autoRotation:true
             });
@@ -29,14 +47,26 @@ function doAnimation(){
     }
 }
 
+function readAnimationConfig(){
+    SPEED = parseInt($('#animation_speed').val())*3000;
+    LCD_SPACING= parseInt($('#lcd_spacing').val());
+    LCD_TWO_SIDE= $('#lcd_vertical').is(':checked');
+    ANIMATION_TIME= parseFloat($('#animation_time').val());
+
+    console.log("Animation Config:",SPEED,LCD_SPACING,LCD_TWO_SIDE, ANIMATION_TIME);
+}
+
 function startAnimation(){
+
+    readAnimationConfig();
+
     if(animationMarker!=null){
         animationMarker.stopMove();
         animationMarker.remove();
         animationMarker=null;
     }
 
-    if(route.length==0){
+    if(route.length===0){
         $.toast({message:"请先添加路线"});
         return;
     }
@@ -54,7 +84,7 @@ function startAnimation(){
 
     animationMarker.on('moveend',(e)=>{
 
-        route[currentRoute].passes.forEach(element => {
+        route[currentRoute].passes.forEach((element,index) => {
             // console.log(element,animationMarker.getPosition());
             if(animationMarker.getPosition().equals([element.location[0],element.location[1]])){
                 // animationMarker.pauseMove();
@@ -62,8 +92,10 @@ function startAnimation(){
                 //     animationMarker.resumeMove();
                 // },250);
                 // map.trigger('resize');
-                map.resize();
-                $.toast({message:`正在经过${element.name}`});
+                // map.resize();
+
+                passLcd(index)
+                // $.toast({message:`正在经过${element.name}`});
             }
         });
     });
@@ -90,4 +122,9 @@ function startAnimation(){
 
     map.setZoom(12);
     setTimeout(doAnimation, 500);
+    showLcd();
+    setTimeout(function(){
+        //scroll to page top
+        $('html, body').animate({ scrollTop: 0 }, 'fast');},500);
+
 }
