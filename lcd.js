@@ -168,24 +168,26 @@ function showLcdWithLine(line){
     }
 
     // add arrow
-    for(let i=1;i<=3;i++){
-        const ar = new Konva.Line({
-            x: calcX(0.1*i),
-            y: 40,
-            points: [0,0,30/5,0,50/5,50/5,30/5,100/5,0,100/5,20/5,50/5],
-            fill: '#00D2FF',
-            stroke: 'black',
-            strokeWidth: 1,
-            closed: true
-        });
+    if(!isPOI) {
+        for (let i = 1; i <= 3; i++) {
+            const ar = new Konva.Line({
+                x: calcX(0.1 * i),
+                y: 40,
+                points: [0, 0, 30 / 5, 0, 50 / 5, 50 / 5, 30 / 5, 100 / 5, 0, 100 / 5, 20 / 5, 50 / 5],
+                fill: '#00D2FF',
+                stroke: 'black',
+                strokeWidth: 1,
+                closed: true
+            });
 
-        const anim = new Konva.Animation(function(frame) {
-            const INTER=600
-            ar.opacity(Math.abs((frame.time-i*INTER/6)%INTER-INTER/2)/INTER*2);
-        }, layerLine);
-        anim.start();
+            const anim = new Konva.Animation(function (frame) {
+                const INTER = 600
+                ar.opacity(Math.abs((frame.time - i * INTER / 6) % INTER - INTER / 2) / INTER * 2);
+            }, layerLine);
+            anim.start();
 
-        layerLine.add(ar);
+            layerLine.add(ar);
+        }
     }
 
     // add transition
