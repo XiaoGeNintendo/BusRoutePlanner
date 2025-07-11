@@ -13,6 +13,7 @@
         <script src="location.js"></script>
         <script src="animation.js"></script>
         <script src="lcd.js"></script>
+        <script src="report.js"></script>
     </head>
 
     <body>
@@ -49,6 +50,10 @@
 
                 <button class="ui icon button" title="录像回放" onclick="showAnimationModal()">
                     <i class="video icon"></i>
+                </button>
+
+                <button class="ui icon button" title="生成报告" onclick="showReportModal()">
+                    <i class="newspaper icon"></i>
                 </button>
             </div>
             
@@ -258,6 +263,13 @@
             </div>
         </div>
 
+        <div class="ui modal" id="report_modal">
+            <div class="header">报告</div>
+            <div class="content">
+                <div id="report"></div>
+            </div>
+        </div>
+
         <script>
             
             $('.ui.accordion').accordion();
@@ -273,6 +285,10 @@
             }
             function showAnimationModal(){
                 $('#animation_modal').modal('show');
+            }
+            function showReportModal(){
+                generateReport();
+                $('#report_modal').modal('show');
             }
 
             function confirmReset(){
